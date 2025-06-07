@@ -29,7 +29,7 @@ model = tf.keras.models.load_model(MODEL_PATH)
 
 def preprocess_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    image = image.resize((224, 224))  # Replace with your model’s required size
+    image = image.resize((150, 150))  # Replace with your model’s required size
     image_array = np.array(image) / 255.0
     return np.expand_dims(image_array, axis=0)
 
