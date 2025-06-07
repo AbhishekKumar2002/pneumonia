@@ -13,21 +13,20 @@ CORS(app)
 MODEL_URL = "https://kitish-whatsapp-bot-media.s3.ap-south-1.amazonaws.com/documentMessage_1749283994496.bin"
 MODEL_PATH = "model.h5"
 
-# Download model at startup if not present
 def download_model():
     if not os.path.exists(MODEL_PATH):
         print("Downloading model...")
         response = requests.get(MODEL_URL)
+        response.raise_for_status()  # Ensure HTTP errors raise exceptions
         with open(MODEL_PATH, "wb") as f:
             f.write(response.content)
         print("Model downloaded.")
 
 download_model()
 
-# Load the model
+# Load model once on startup
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# Preprocessing function (update according to your model's input shape)
 def preprocess_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     image = image.resize((224, 224))  # Replace with your model’s required size
@@ -38,7 +37,7 @@ def preprocess_image(image_bytes):
 def predict():
     if "file" not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
-    
+
     file = request.files["file"]
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
@@ -53,4 +52,5 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8000))  # Use PORT env var or default to 8000
+    app.run(host="0.0.0.0", port=port, debug=True)
